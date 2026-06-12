@@ -1,0 +1,162 @@
+[
+  {
+    "dynasty": "诗经",
+    "author": "佚名",
+    "work": "关雎",
+    "quote": "关关雎鸠，在河之洲。窈窕淑女，君子好逑。",
+    "characters": ["关", "雎", "鸠", "河", "洲", "窈", "窕", "淑", "女", "君", "子", "逑"],
+    "themes": ["love", "courtship", "nature", "harmony"]
+  },
+  {
+    "dynasty": "诗经",
+    "author": "佚名",
+    "work": "蒹葭",
+    "quote": "蒹葭苍苍，白露为霜。所谓伊人，在水一方。",
+    "characters": ["蒹", "葭", "苍", "露", "霜", "伊", "人", "水", "方"],
+    "themes": ["longing", "nature", "beauty", "distance"]
+  },
+  {
+    "dynasty": "诗经",
+    "author": "佚名",
+    "work": "桃夭",
+    "quote": "桃之夭夭，灼灼其华。之子于归，宜其室家。",
+    "characters": ["桃", "夭", "灼", "华", "归", "宜", "室", "家"],
+    "themes": ["marriage", "beauty", "fertility", "celebration"]
+  },
+  {
+    "dynasty": "诗经",
+    "author": "佚名",
+    "work": "鹿鸣",
+    "quote": "呦呦鹿鸣，食野之苹。我有嘉宾，鼓瑟吹笙。",
+    "characters": ["呦", "鹿", "鸣", "野", "苹", "嘉", "宾", "鼓", "瑟", "笙"],
+    "themes": ["hospitality", "joy", "music", "friendship"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "李白",
+    "work": "静夜思",
+    "quote": "床前明月光，疑是地上霜。举头望明月，低头思故乡。",
+    "characters": ["床", "明", "月", "光", "霜", "举", "头", "望", "低", "思", "故", "乡"],
+    "themes": ["homesickness", "moon", "night", "solitude"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "杜甫",
+    "work": "春望",
+    "quote": "国破山河在，城春草木深。感时花溅泪，恨别鸟惊心。",
+    "characters": ["国", "破", "山", "河", "城", "春", "草", "木", "花", "溅", "泪", "鸟", "惊", "心"],
+    "themes": ["war", "patriotism", "sorrow", "spring"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "王维",
+    "work": "山居秋暝",
+    "quote": "空山新雨后，天气晚来秋。明月松间照，清泉石上流。",
+    "characters": ["空", "山", "雨", "天", "气", "晚", "秋", "明", "月", "松", "照", "清", "泉", "石", "流"],
+    "themes": ["nature", "tranquility", "autumn", "retirement"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "白居易",
+    "work": "赋得古原草送别",
+    "quote": "离离原上草，一岁一枯荣。野火烧不尽，春风吹又生。",
+    "characters": ["离", "原", "草", "岁", "枯", "荣", "野", "火", "烧", "春", "风", "生"],
+    "themes": ["resilience", "nature", "life", "parting"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "王勃",
+    "work": "送杜少府之任蜀州",
+    "quote": "海内存知己，天涯若比邻。",
+    "characters": ["海", "内", "存", "知", "己", "天", "涯", "若", "比", "邻"],
+    "themes": ["friendship", "distance", "farewell", "connection"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "张九龄",
+    "work": "望月怀远",
+    "quote": "海上生明月，天涯共此时。",
+    "characters": ["海", "上", "生", "明", "月", "天", "涯", "共", "此", "时"],
+    "themes": ["moon", "longing", "unity", "distance"]
+  },
+  {
+    "dynasty": "唐诗",
+    "author": "李商隐",
+    "work": "无题",
+    "quote": "春蚕到死丝方尽，蜡炬成灰泪始干。",
+    "characters": ["春", "蚕", "死", "丝", "蜡", "炬", "灰", "泪"],
+    "themes": ["devotion", "love", "sacrifice", "perseverance"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "苏轼",
+    "work": "水调歌头",
+    "quote": "但愿人长久，千里共婵娟。",
+    "characters": ["但", "愿", "人", "长", "久", "千", "里", "共", "婵", "娟"],
+    "themes": ["longing", "family", "moon", "blessing"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "苏轼",
+    "work": "定风波",
+    "quote": "回首向来萧瑟处，归去，也无风雨也无晴。",
+    "characters": ["回", "首", "萧", "瑟", "归", "风", "雨", "晴"],
+    "themes": ["resilience", "philosophy", "peace", "transcendence"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "李清照",
+    "work": "如梦令",
+    "quote": "常记溪亭日暮，沉醉不知归路。",
+    "characters": ["常", "记", "溪", "亭", "日", "暮", "沉", "醉", "归", "路"],
+    "themes": ["nostalgia", "nature", "youth", "joy"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "柳永",
+    "work": "雨霖铃",
+    "quote": "多情自古伤离别，更那堪冷落清秋节。",
+    "characters": ["多", "情", "伤", "离", "别", "冷", "落", "清", "秋", "节"],
+    "themes": ["parting", "sorrow", "autumn", "love"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "辛弃疾",
+    "work": "青玉案·元夕",
+    "quote": "众里寻他千百度，蓦然回首，那人却在灯火阑珊处。",
+    "characters": ["众", "寻", "千", "百", "度", "蓦", "然", "回", "首", "灯", "火", "阑", "珊"],
+    "themes": ["search", "discovery", "celebration", "love"]
+  },
+  {
+    "dynasty": "宋词",
+    "author": "秦观",
+    "work": "鹊桥仙",
+    "quote": "两情若是久长时，又岂在朝朝暮暮。",
+    "characters": ["两", "情", "若", "久", "长", "朝", "暮"],
+    "themes": ["love", "eternity", "devotion", "time"]
+  },
+  {
+    "dynasty": "论语",
+    "author": "孔子",
+    "work": "学而",
+    "quote": "学而时习之，不亦说乎？有朋自远方来，不亦乐乎？",
+    "characters": ["学", "时", "习", "说", "朋", "远", "方", "乐"],
+    "themes": ["learning", "friendship", "joy", "wisdom"]
+  },
+  {
+    "dynasty": "论语",
+    "author": "孔子",
+    "work": "为政",
+    "quote": "学而不思则罔，思而不学则殆。",
+    "characters": ["学", "思", "罔", "殆"],
+    "themes": ["learning", "reflection", "wisdom", "balance"]
+  },
+  {
+    "dynasty": "论语",
+    "author": "孔子",
+    "work": "雍也",
+    "quote": "知者乐水，仁者乐山。知者动，仁者静。知者乐，仁者寿。",
+    "characters": ["知", "乐", "水", "仁", "山", "动", "静", "寿"],
+    "themes": ["wisdom", "virtue", "nature", "philosophy"]
+  }
+]

@@ -1,0 +1,125 @@
+[
+  {
+    "englishName": "Emily",
+    "origin": "Latin 'Aemilia'",
+    "originalMeaning": "rival, striving, industrious",
+    "chineseCharacters": [
+      { "char": "艾", "reason": "Phonetic 'Ai' matches 'Em-', also means 'splendid, beautiful' in classical texts", "source": "诗经·小雅·南山有台", "element": "wood" },
+      { "char": "米", "reason": "Phonetic 'Mi' matches the 'mi' sound", "source": "Common usage", "element": "earth" },
+      { "char": "莉", "reason": "Jasmine — represents grace and natural beauty", "source": "Common floral name character", "element": "water" }
+    ],
+    "suggestedNames": ["艾米莉", "艾美", "艾蜜"],
+    "avoid": ["一粒", "一米", "暗粒"]
+  },
+  {
+    "englishName": "Michael",
+    "origin": "Hebrew 'Mikha'el'",
+    "originalMeaning": "who is like God?",
+    "chineseCharacters": [
+      { "char": "迈", "reason": "Phonetic 'Mai' matches 'Mi-', means 'to stride forward'", "source": "三国志", "element": "fire" },
+      { "char": "克", "reason": "Phonetic 'Ke' matches '-kel', means 'to overcome'", "source": "论语·子罕", "element": "metal" },
+      { "char": "尔", "reason": "Classical pronoun 'you', adds literary elegance", "source": "诗经·卫风·氓", "element": "water" }
+    ],
+    "suggestedNames": ["迈克尔", "麦克", "迈可尔"],
+    "avoid": ["卖客", "埋客", "麦壳"]
+  },
+  {
+    "englishName": "Sophia",
+    "origin": "Greek 'Sophia'",
+    "originalMeaning": "wisdom",
+    "chineseCharacters": [
+      { "char": "苏", "reason": "Phonetic 'Su' matches 'So-', also surname of famous poet Su Shi", "source": "宋词", "element": "wood" },
+      { "char": "菲", "reason": "Phonetic 'Fei' matches '-phia', means 'fragrant'", "source": "楚辞·九章", "element": "wood" },
+      { "char": "亚", "reason": "Phonetic 'Ya' fills the third syllable gracefully", "source": "Classical phonetic usage", "element": "earth" }
+    ],
+    "suggestedNames": ["苏菲亚", "索菲亚", "苏菲"],
+    "avoid": ["叟肥", "馊饭", "搜匪"]
+  },
+  {
+    "englishName": "Alexander",
+    "origin": "Greek 'Alexandros'",
+    "originalMeaning": "defender of men",
+    "chineseCharacters": [
+      { "char": "亚", "reason": "Phonetic 'Ya' matches 'A-'", "source": "Classical phonetic usage", "element": "earth" },
+      { "char": "历", "reason": "Phonetic 'Li' matches '-le-', means 'to experience, history'", "source": "孟子", "element": "fire" },
+      { "char": "山", "reason": "Phonetic 'Shan' matches '-xan-', means 'mountain, steadfast'", "source": "论语·雍也", "element": "earth" }
+    ],
+    "suggestedNames": ["亚历山大", "亚历山", "历山"],
+    "avoid": ["压立山", "牙裂散", "哑裂散"]
+  },
+  {
+    "englishName": "Elizabeth",
+    "origin": "Hebrew 'Elisheva'",
+    "originalMeaning": "God is my oath",
+    "chineseCharacters": [
+      { "char": "伊", "reason": "Phonetic 'Yi' matches 'E-', classical female reference", "source": "诗经·秦风·蒹葭", "element": "water" },
+      { "char": "丽", "reason": "Phonetic 'Li' matches '-li-', means 'beautiful'", "source": "楚辞·离骚", "element": "fire" },
+      { "char": "莎", "reason": "Phonetic 'Sha' matches '-zabeth', elegant feminine character", "source": "Common usage", "element": "wood" },
+      { "char": "白", "reason": "Phonetic 'Bai' matches '-beth', means 'pure, white'", "source": "论语·阳货", "element": "metal" }
+    ],
+    "suggestedNames": ["伊丽莎白", "伊莉莎白", "伊丽白"],
+    "avoid": ["一粒傻", "一粒杀", "夜里杀"]
+  },
+  {
+    "englishName": "William",
+    "origin": "Germanic 'Willahelm'",
+    "originalMeaning": "resolute protector",
+    "chineseCharacters": [
+      { "char": "威", "reason": "Phonetic 'Wei' matches 'Wi-', means 'dignity, power'", "source": "史记", "element": "water" },
+      { "char": "廉", "reason": "Phonetic 'Lian' matches '-lliam', means 'upright, honest'", "source": "孟子·离娄下", "element": "metal" },
+      { "char": "姆", "reason": "Completes the three-syllable phonetic mapping", "source": "Common usage", "element": "earth" }
+    ],
+    "suggestedNames": ["威廉姆", "威廉", "维廉"],
+    "avoid": ["伪廉", "萎廉", "尾连"]
+  },
+  {
+    "englishName": "James",
+    "origin": "Hebrew 'Ya'aqov' (Jacob)",
+    "originalMeaning": "supplanter, one who follows",
+    "chineseCharacters": [
+      { "char": "詹", "reason": "Phonetic 'Zhan' matches 'Ja-'", "source": "Classical Chinese surname", "element": "fire" },
+      { "char": "姆", "reason": "Completes the two-syllable phonetic mapping", "source": "Common usage", "element": "earth" },
+      { "char": "士", "reason": "Scholar-official, gentleman — complements the dignified tone", "source": "论语·里仁", "element": "metal" }
+    ],
+    "suggestedNames": ["詹姆斯", "詹姆士", "詹士"],
+    "avoid": ["炸木", "榨墓", "眨目"]
+  },
+  {
+    "englishName": "Olivia",
+    "origin": "Latin 'oliva'",
+    "originalMeaning": "olive tree, symbol of peace",
+    "chineseCharacters": [
+      { "char": "奥", "reason": "Phonetic 'Ao' matches 'O-', means 'profound, mysterious'", "source": "易经·系辞", "element": "earth" },
+      { "char": "丽", "reason": "Phonetic 'Li' matches '-li-', means 'beautiful'", "source": "楚辞·离骚", "element": "fire" },
+      { "char": "维", "reason": "Phonetic 'Wei' matches '-via', means 'to maintain, link'", "source": "诗经·大雅", "element": "water" },
+      { "char": "亚", "reason": "Graceful feminine ending in Chinese transliteration", "source": "Classical phonetic usage", "element": "earth" }
+    ],
+    "suggestedNames": ["奥丽维亚", "奥莉维亚", "丽维"],
+    "avoid": ["呕利", "藕粒", "沤痢"]
+  },
+  {
+    "englishName": "Benjamin",
+    "origin": "Hebrew 'Binyamin'",
+    "originalMeaning": "son of the right hand / favored son",
+    "chineseCharacters": [
+      { "char": "本", "reason": "Phonetic 'Ben' matches 'Ben-', means 'foundation, origin'", "source": "论语·学而", "element": "wood" },
+      { "char": "杰", "reason": "Phonetic 'Jie' matches '-jamin', means 'outstanding, heroic'", "source": "楚辞·九章", "element": "fire" },
+      { "char": "明", "reason": "Phonetic 'Ming' fills the final syllable, means 'bright, clear'", "source": "诗经·大雅·大明", "element": "fire" },
+      { "char": "恩", "reason": "Grace, favor — echoes the 'favored son' meaning", "source": "孟子·公孙丑上", "element": "earth" }
+    ],
+    "suggestedNames": ["本杰明", "本杰铭", "本明"],
+    "avoid": ["笨杰明", "奔劫", "崩煎"]
+  },
+  {
+    "englishName": "Charlotte",
+    "origin": "French 'Charlotte', feminine of Charles",
+    "originalMeaning": "free man, petite and graceful",
+    "chineseCharacters": [
+      { "char": "夏", "reason": "Phonetic 'Xia' matches 'Char-', also 'summer' — warm and vibrant", "source": "诗经·国风", "element": "fire" },
+      { "char": "洛", "reason": "Phonetic 'Luo' matches '-lotte', name of the Luo River", "source": "洛神赋", "element": "water" },
+      { "char": "特", "reason": "Phonetic 'Te' completes the transliteration, means 'special, distinguished'", "source": "Classical usage", "element": "metal" }
+    ],
+    "suggestedNames": ["夏洛特", "夏洛蒂", "夏莉"],
+    "avoid": ["瞎落", "虾烙", "下落后"]
+  }
+]
