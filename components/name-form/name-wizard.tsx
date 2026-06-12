@@ -77,9 +77,8 @@ export function NameWizard() {
             gender: data.gender,
             birth_date: data.birthDate || undefined,
             birth_time: data.birthTime || undefined,
-            profession: data.occupation || undefined,
-            personality:
-              data.personality.length > 0 ? data.personality : undefined,
+            profession: data.occupation || "other",
+            personality: (data.personality ?? []),
             preferred_style: data.nameStyle,
             purpose: data.namePurpose,
           }),

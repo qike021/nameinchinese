@@ -11,14 +11,14 @@ export const nameFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Please select a gender"),
 
-  // ── Step 2: Birth Details (all optional) ──
-  birthDate: z.string().optional().default(""),
-  birthTime: z.string().optional().default(""),
-  birthPlace: z.string().optional().default(""),
-  timezone: z.string().optional().default(""),
+  // ── Step 2: Birth Details (all optional via .default()) ──
+  birthDate: z.string().default(""),
+  birthTime: z.string().default(""),
+  birthPlace: z.string().default(""),
+  timezone: z.string().default(""),
 
   // ── Step 3: Profile ──
-  occupation: z.string().optional().default(""),
+  occupation: z.string().default(""),
   personality: z.array(z.string()).default([]),
   nameStyle: z.enum(["traditional", "balanced", "modern"]).default("balanced"),
   namePurpose: z.enum(["study", "work", "social", "tattoo", "other"]).default("study"),
@@ -33,7 +33,10 @@ export const nameFormSchema = z.object({
     .refine((v) => v === true, "You must agree to the terms and privacy policy"),
 });
 
-export type NameFormData = z.infer<typeof nameFormSchema>;
+/** Input type (what the form produces) — optional fields are string | undefined */
+export type NameFormData = z.input<typeof nameFormSchema>;
+/** Output type (after defaults applied) — all fields are resolved */
+export type NameFormOutput = z.output<typeof nameFormSchema>;
 
 /** Default / initial values for the form */
 export const defaultFormValues: NameFormData = {
