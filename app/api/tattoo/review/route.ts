@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       .insert(tattooReviews)
       .values({
         requestedText: text,
-        reviewResult: reviewResult as Record<string, unknown>,
+        reviewResult: reviewResult as unknown as Record<string, unknown>,
         status: "completed",
       })
       .returning({ id: tattooReviews.id });
