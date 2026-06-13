@@ -1,0 +1,13 @@
+{
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/",
+      "framework": "nextjs"
+    },
+    "cnlunar": {
+      "root": "services/cnlunar",
+      "entrypoint": "main:app",
+      "routePrefix": "/_/cnlunar"
+    }
+  }
+}
