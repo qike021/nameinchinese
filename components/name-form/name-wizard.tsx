@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { StepBasics } from "./step-basics";
 import { StepBirth } from "./step-birth";
 import { StepProfile } from "./step-profile";
@@ -12,7 +13,6 @@ import {
   nameFormSchema,
   defaultFormValues,
   stepFields,
-  stepMeta,
   type NameFormData,
 } from "@/lib/form/types";
 
@@ -31,11 +31,14 @@ export function NameWizard() {
   const params = useParams<{ lang: string }>();
   const router = useRouter();
   const lang = params?.lang ?? "en";
+  const t = useTranslations("form");
 
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const stepTitles = [t("step1Title"), t("step2Title"), t("step3Title"), t("step4Title")];
+  const stepSubtitles = [t("step1Desc"), t("step2Desc"), t("step3Desc"), t("step4Desc")];
   const {
     register,
     handleSubmit,
@@ -114,7 +117,6 @@ export function NameWizard() {
     [lang, router]
   );
 
-  const meta = stepMeta[step];
   const progressPercent = ((step + 1) / 4) * 100;
 
   /** Render the step-specific form fields */
@@ -154,7 +156,7 @@ export function NameWizard() {
           华名堂 NameInChinese
         </div>
         <div className="font-body text-sm font-medium text-text-tertiary">
-          Step {step + 1} of 4
+          {t("step", { current: step + 1, total: 4 })}
         </div>
       </header>
 
@@ -171,12 +173,12 @@ export function NameWizard() {
         <div className="w-full max-w-[640px] bg-surface rounded-2xl shadow-md p-6 md:p-12">
           {/* Title */}
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-text mb-2">
-            {meta.title}
+            {stepTitles[step]}
           </h1>
 
           {/* Subtitle */}
           <p className="font-body text-sm md:text-[15px] text-text-tertiary leading-relaxed mb-8 md:mb-9">
-            {meta.subtitle}
+            {stepSubtitles[step]}
           </p>
 
           {/* Form — wraps all steps; submit only on step 4 */}

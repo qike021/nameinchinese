@@ -2,12 +2,8 @@
 
 import type { UseFormRegister, UseFormSetValue, UseFormWatch, FieldErrors } from "react-hook-form";
 import type { NameFormData } from "@/lib/form/types";
-import {
-  personalityTraits,
-  occupationOptions,
-  styleOptions,
-  purposeOptions,
-} from "@/lib/form/types";
+import { personalityTraits, occupationOptions, styleOptions, purposeOptions } from "@/lib/form/types";
+import { useTranslations } from "next-intl";
 
 interface StepProfileProps {
   register: UseFormRegister<NameFormData>;
@@ -16,11 +12,8 @@ interface StepProfileProps {
   errors: FieldErrors<NameFormData>;
 }
 
-/**
- * Step 3: Personality traits (chips), occupation, name style, and name purpose.
- * Matches desktop/form-step3.html layout exactly.
- */
 export function StepProfile({ register, setValue, watch, errors }: StepProfileProps) {
+  const t = useTranslations("form");
   const selectedTraits = watch("personality") ?? [];
 
   const toggleTrait = (trait: string) => {
@@ -34,7 +27,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
     <div className="flex flex-col gap-6">
       {/* Personality Traits — Chips */}
       <div className="flex flex-col gap-2">
-        <span className="font-body text-sm font-medium text-text">Personality Traits</span>
+        <span className="font-body text-sm font-medium text-text">{t("personality")}</span>
         <div className="grid grid-cols-3 gap-2">
           {personalityTraits.map((trait) => {
             const active = selectedTraits.includes(trait.value);
@@ -54,7 +47,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
                   }
                 `}
               >
-                {trait.label}
+                {t(`personalityOptions.${trait.value}` as Parameters<typeof t>[0])}
               </button>
             );
           })}
@@ -67,7 +60,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
       {/* Occupation */}
       <div className="flex flex-col gap-2">
         <label htmlFor="occupation" className="font-body text-sm font-medium text-text">
-          Occupation{" "}
+          {t("profession")}{" "}
           <span className="font-normal text-text-muted text-xs">(optional)</span>
         </label>
         <select
@@ -81,7 +74,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
         >
           {occupationOptions.map((opt) => (
             <option key={opt.value} value={opt.value} disabled={opt.value === ""}>
-              {opt.label}
+              {opt.value === "" ? opt.label : t(`professionOptions.${opt.value}` as Parameters<typeof t>[0])}
             </option>
           ))}
         </select>
@@ -89,7 +82,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
 
       {/* Name Style */}
       <div className="flex flex-col gap-2">
-        <span className="font-body text-sm font-medium text-text">Preferred Style</span>
+        <span className="font-body text-sm font-medium text-text">{t("preferredStyle")}</span>
         <div className="flex flex-col gap-3">
           {styleOptions.map((style) => (
             <label
@@ -106,7 +99,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
                            focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
               />
               <span className="font-body text-sm text-text-secondary group-hover:text-text transition-colors">
-                {style.label}
+                {t(`styleOptions.${style.value}` as Parameters<typeof t>[0])}
               </span>
             </label>
           ))}
@@ -115,7 +108,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
 
       {/* Name Purpose */}
       <div className="flex flex-col gap-2">
-        <span className="font-body text-sm font-medium text-text">Name Purpose</span>
+        <span className="font-body text-sm font-medium text-text">{t("purpose")}</span>
         <div className="flex flex-col gap-3">
           {purposeOptions.map((purpose) => (
             <label
@@ -132,7 +125,7 @@ export function StepProfile({ register, setValue, watch, errors }: StepProfilePr
                            focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
               />
               <span className="font-body text-sm text-text-secondary group-hover:text-text transition-colors">
-                {purpose.label}
+                {t(`purposeOptions.${purpose.value}` as Parameters<typeof t>[0])}
               </span>
             </label>
           ))}

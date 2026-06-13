@@ -2,6 +2,7 @@
 
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
 import type { NameFormData } from "@/lib/form/types";
+import { useTranslations } from "next-intl";
 
 interface StepContactProps {
   register: UseFormRegister<NameFormData>;
@@ -9,17 +10,15 @@ interface StepContactProps {
   isSubmitting: boolean;
 }
 
-/**
- * Step 4: Email + terms checkbox + submit button.
- * Matches desktop/form-step4.html layout exactly.
- */
 export function StepContact({ register, errors, isSubmitting }: StepContactProps) {
+  const t = useTranslations("form");
+
   return (
     <div className="flex flex-col gap-6">
       {/* Email */}
       <div className="flex flex-col gap-2">
         <label htmlFor="email" className="font-body text-sm font-medium text-text">
-          Email Address <span className="text-primary">*</span>
+          {t("email")} <span className="text-primary">*</span>
         </label>
         <input
           id="email"
@@ -50,14 +49,7 @@ export function StepContact({ register, errors, isSubmitting }: StepContactProps
                        bg-no-repeat bg-center"
           />
           <span className="font-body text-xs text-text-secondary leading-relaxed">
-            I agree to the{" "}
-            <a href="#" className="text-primary no-underline hover:underline">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="#" className="text-primary no-underline hover:underline">
-              Privacy Policy
-            </a>
+            {t("termsAgreement")}
           </span>
         </label>
         {errors.agreedToTerms && (
@@ -97,10 +89,10 @@ export function StepContact({ register, errors, isSubmitting }: StepContactProps
                 d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
               />
             </svg>
-            Generating your names...
+            {t("generating")}
           </>
         ) : (
-          "Discover Your Name →"
+          t("submit")
         )}
       </button>
 
