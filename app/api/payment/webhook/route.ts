@@ -1,38 +1,80 @@
 /**
  * POST /api/payment/webhook
  *
- * Receives PayPal webhook events.
- * On CHECKOUT.ORDER.APPROVED: records the paid order in the database.
+ * Receives PayPal webhook events. Verifies a shared webhook secret
+ * before processing (defense against forged webhook calls).
  *
- * Note: PayPal sandbox webhooks need a public URL (use ngrok for local dev).
+ * PayPal production signature verification (PAYPAL-AUTH-ALGO header)
+ * should be added when moving to production. This shared-secret approach
+ * covers the MVP sandbox phase.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSetting } from "@/lib/config/settings";
+
+/** Verify the webhook secret from headers or query param */
+async function verifyWebhookSecret(request: NextRequest): Promise<boolean> {
+  // Read shared secret from DB (env fallback)
+  const expected = await getSetting("webhook_secret");
+  if (!expected) {
+    // No secret configured — allow but warn
+    console.warn("[Webhook] No webhook_secret configured. Skipping verification.");
+    return true;
+  }
+
+  // Check header first, then query param
+  const header = request.headers.get("x-webhook-secret");
+  if (header === expected) return true;
+
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get("secret");
+  if (query === expected) return true;
+
+  return false;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Verify webhook secret ──
+    const valid = await verifyWebhookSecret(request);
+    if (!valid) {
+      console.warn("[Webhook] Invalid webhook secret");
+      return NextResponse.json({ received: true }); // Don't leak info
+    }
+
     const body = await request.json();
 
     if (body.event_type === "CHECKOUT.ORDER.APPROVED") {
       const resource = body.resource;
       const orderId = resource.id;
-      const email = resource.payer?.email_address || "unknown";
       const purchaseUnit = resource.purchase_units?.[0];
       const amountCents = Math.round(
         parseFloat(purchaseUnit?.amount?.value || "0") * 100
       );
       const description = purchaseUnit?.description || "";
 
-      // Determine tier from description
       const tier = description.includes("Premium")
         ? "premium"
         : description.includes("Professional")
         ? "pro"
         : "basic";
 
-      // Record the order
-      const supabase = createAdminClient();
-      const { error } = await supabase.from("orders").insert({
+      // ── Upsert via Supabase Admin (REST API) ──
+      const adminClient = createAdminClient();
+
+      // Check if already recorded
+      const { data: existing } = await adminClient
+        .from("orders")
+        .select("id,status")
+        .eq("id", orderId)
+        .maybeSingle();
+
+      if (existing?.status === "paid" || existing?.status === "completed") {
+        return NextResponse.json({ received: true, deduplicated: true });
+      }
+
+      const { error } = await adminClient.from("orders").upsert({
+        id: orderId,
         tier,
         amount: amountCents,
         currency: "usd",
@@ -42,7 +84,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (error) {
-        console.error("[Webhook] Failed to insert order:", error);
+        console.error("[Webhook] Failed to upsert order:", error);
       }
     }
 

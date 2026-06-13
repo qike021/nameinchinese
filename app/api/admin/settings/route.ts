@@ -13,7 +13,12 @@ import {
 } from "@/lib/config/settings";
 
 /** 敏感配置键：返回时只显示后 4 位 */
-const SENSITIVE_KEYS = ["deepseek_api_key", "paypal_secret"];
+const SENSITIVE_KEYS = [
+  "deepseek_api_key",
+  "paypal_secret",
+  "paypal_client_id",
+  "webhook_secret",
+];
 
 /** 脱敏：保留后 4 位，其余替换为星号 */
 function maskValue(value: string): string {
