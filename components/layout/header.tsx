@@ -17,17 +17,17 @@ export function Header() {
   const lang = params?.lang ?? "en";
 
   return (
-    <header className="h-[72px] flex items-center justify-between px-6 md:px-10 bg-bg sticky top-0 z-50 border-b border-border-light">
+    <header className="h-[72px] flex items-center justify-between px-4 md:px-10 bg-bg sticky top-0 z-50 border-b border-border-light">
       {/* ── Logo ── */}
       <Link
         href={`/${lang}`}
-        className="font-cjk text-lg font-bold text-primary hover:opacity-90 transition-opacity"
+        className="font-cjk text-base md:text-lg font-bold text-primary hover:opacity-90 transition-opacity shrink-0"
       >
         ☯ NameInChinese
       </Link>
 
       {/* ── Right Section ── */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 md:gap-6">
         {/* Nav Links (hidden on mobile) */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
@@ -50,13 +50,13 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* ── Language Switcher ── */}
-        <div className="flex items-center gap-1" role="navigation" aria-label="Language switcher">
+        {/* ── Language Switcher (hidden on small mobile) ── */}
+        <div className="hidden sm:flex items-center gap-1" role="navigation" aria-label="Language switcher">
           {locales.map((locale) => (
             <Link
               key={locale}
               href={`/${locale}`}
-              className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors ${
+              className={`text-[10px] md:text-xs font-medium px-1 py-0.5 rounded transition-colors ${
                 locale === lang
                   ? "bg-primary-light text-primary"
                   : "text-text-muted hover:text-primary"
@@ -72,7 +72,7 @@ export function Header() {
         {/* ── CTA Button ── */}
         <Link
           href={`/${lang}/create`}
-          className="btn btn-primary btn-sm"
+          className="btn btn-primary btn-sm shrink-0"
         >
           Get Started
         </Link>
