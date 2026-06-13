@@ -2,15 +2,12 @@
  * POST /api/payment/capture
  *
  * Captures a PayPal order after user approval (client-side flow).
- * Marks the order as paid in the database and returns the order record.
+ * Marks the order as paid in the database via Supabase REST API.
  *
  * This is triggered by the payment success page after PayPal redirects back.
- * The webhook (server-to-server) also handles this, but the capture endpoint
- * provides immediate confirmation for the client.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { orders } from "@/db/schema";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { capturePayPalOrder } from "@/lib/payment/paypal";
 
 export async function POST(request: NextRequest) {
@@ -24,10 +21,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const orderId = body.order_id;
+
+    // ── Idempotency: check if already captured ──
+    const adminClient = createAdminClient();
+    const { data: existing } = await adminClient
+      .from("orders")
+      .select("id,status")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (existing?.status === "paid" || existing?.status === "completed") {
+      return NextResponse.json({
+        order_id: existing.id,
+        status: existing.status,
+        already_captured: true,
+      });
+    }
+
     // ── Capture the PayPal order ──
     let captureResult;
     try {
-      captureResult = await capturePayPalOrder(body.order_id);
+      captureResult = await capturePayPalOrder(orderId);
     } catch (error) {
       console.error("[Capture] PayPal capture failed:", error);
       return NextResponse.json(
@@ -51,23 +66,22 @@ export async function POST(request: NextRequest) {
 
     const payerEmail = captureResult.payer?.email_address || "unknown";
 
-    // ── Insert or update the order record ──
-    const [order] = await db
-      .insert(orders)
-      .values({
-        id: body.order_id,
+    // ── Upsert the order record via Supabase REST ──
+    const { data: order, error } = await adminClient
+      .from("orders")
+      .upsert({
+        id: orderId,
         tier,
         amount: amountCents,
         currency: "usd",
         status: "paid",
-        paymentMethod: "paypal",
-        paymentId: captureResult.id,
+        payment_method: "paypal",
+        payment_id: captureResult.id,
       })
-      .onConflictDoUpdate({
-        target: orders.id,
-        set: { status: "paid", paymentId: captureResult.id },
-      })
-      .returning();
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({
       order_id: order.id,

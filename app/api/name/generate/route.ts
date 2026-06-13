@@ -8,9 +8,30 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { generateNames } from "@/lib/naming/engine";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate limiting (by IP) ──
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const { allowed, remaining, resetIn } = checkRateLimit(`name-gen:${ip}`);
+
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many requests. Please wait ${resetIn} seconds before trying again.`,
+          retry_after: resetIn,
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(resetIn) },
+        }
+      );
+    }
+
     const body = await request.json();
 
     // ── Validate required fields ──

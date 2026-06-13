@@ -34,6 +34,7 @@ export function NameWizard() {
 
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -68,6 +69,7 @@ export function NameWizard() {
   const onSubmit = useCallback(
     async (data: NameFormData) => {
       setIsSubmitting(true);
+      setSubmitError(null);
       try {
         const response = await fetch("/api/name/generate", {
           method: "POST",
@@ -102,7 +104,9 @@ export function NameWizard() {
         router.push(`/${lang}/results`);
       } catch (error) {
         console.error("[NameWizard] Submission failed:", error);
-        // TODO: Show user-friendly error toast / message
+        setSubmitError(
+          error instanceof Error ? error.message : "Failed to generate names. Please try again."
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -180,6 +184,11 @@ export function NameWizard() {
             onSubmit={step === 3 ? handleSubmit(onSubmit) : undefined}
             className="flex flex-col gap-6"
           >
+            {submitError && (
+              <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="font-body text-sm text-error">{submitError}</p>
+              </div>
+            )}
             {renderStep()}
 
             {/* ── Navigation Buttons ── */}

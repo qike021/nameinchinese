@@ -1,84 +1,99 @@
 /**
  * POST /api/name/unlock
  *
- * Paid tier endpoint — generates the full 5-name result for a user
- * who has completed payment. Verifies the order is paid, generates
- * names via the naming engine, persists the result, and returns it.
+ * Paid tier endpoint — generates the full 5-name result after payment.
+ * Verifies: (1) user is authenticated, (2) order exists + is paid.
+ * Persists via Supabase REST API.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { orders, generatedNames } from "@/db/schema";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateNames } from "@/lib/naming/engine";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // ── Validate required fields ──
+    // ── Auth check ──
+    const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // ── Validate + sanitize required fields ──
     if (!body.order_id) {
-      return NextResponse.json(
-        { error: "order_id is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "order_id is required" }, { status: 400 });
     }
-
     if (!body.english_name || !body.gender) {
-      return NextResponse.json(
-        { error: "english_name and gender are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "english_name and gender are required" }, { status: 400 });
     }
-
     if (!["male", "female"].includes(body.gender)) {
-      return NextResponse.json(
-        { error: "gender must be 'male' or 'female'" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "gender must be 'male' or 'female'" }, { status: 400 });
     }
 
-    // ── Verify the order is paid ──
-    const [order] = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, body.order_id))
-      .limit(1);
+    // Sanitize name input
+    const englishName = String(body.english_name).trim().slice(0, 100);
 
-    if (!order) {
-      return NextResponse.json(
-        { error: "Order not found" },
-        { status: 404 }
-      );
+    // ── Verify the order is paid (via Supabase REST) ──
+    const adminClient = createAdminClient();
+    const { data: order, error: orderError } = await adminClient
+      .from("orders")
+      .select("id,status")
+      .eq("id", body.order_id)
+      .maybeSingle();
+
+    if (orderError || !order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
-
-    if (order.status !== "paid") {
+    if (order.status !== "paid" && order.status !== "completed") {
       return NextResponse.json(
-        { error: "Order is not paid. Status: " + order.status },
+        { error: `Order is not paid. Status: ${order.status}` },
         { status: 402 }
       );
     }
 
+    // ── Idempotency: check if already generated ──
+    const { data: existing } = await adminClient
+      .from("generated_names")
+      .select("id")
+      .eq("order_id", body.order_id)
+      .maybeSingle();
+
+    if (existing) {
+      return NextResponse.json({
+        id: existing.id,
+        already_generated: true,
+      });
+    }
+
     // ── Generate the full set of names ──
     const { names, baziResult } = await generateNames({
-      englishName: body.english_name,
+      englishName,
       gender: body.gender,
       birthDate: body.birth_date,
       birthTime: body.birth_time,
       latitude: body.latitude,
       longitude: body.longitude,
-      profession: body.profession || "other",
-      personality: body.personality || [],
-      preferredStyle: body.preferred_style || "balanced",
-      purpose: body.purpose || "study",
+      profession: String(body.profession || "other").slice(0, 50),
+      personality: Array.isArray(body.personality) ? body.personality : [],
+      preferredStyle: ["traditional", "balanced", "modern"].includes(body.preferred_style)
+        ? body.preferred_style
+        : "balanced",
+      purpose: String(body.purpose || "study").slice(0, 50),
     });
 
-    // ── Persist to generated_names table ──
-    const [record] = await db
-      .insert(generatedNames)
-      .values({
-        orderId: body.order_id,
-        englishName: body.english_name,
-        inputProfile: {
+    // ── Persist via Supabase REST ──
+    const { data: record, error: insertError } = await adminClient
+      .from("generated_names")
+      .insert({
+        order_id: body.order_id,
+        user_id: user.id,
+        english_name: englishName,
+        input_profile: {
           gender: body.gender,
           birth_date: body.birth_date || null,
           birth_time: body.birth_time || null,
@@ -87,24 +102,25 @@ export async function POST(request: NextRequest) {
           preferred_style: body.preferred_style || "balanced",
           purpose: body.purpose || "study",
         },
-        baziResult: baziResult,
-        names: names,
+        bazi_result: baziResult,
+        names,
       })
-      .returning();
+      .select("id")
+      .single();
 
-    // ── Return the full results ──
+    if (insertError) throw insertError;
+
     return NextResponse.json({
       id: record.id,
-      names: names,
+      names,
       bazi: baziResult,
       total_names: names.length,
     });
   } catch (error) {
     console.error("[API] Name unlock failed:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Failed to unlock names";
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to unlock names" },
+      { status: 500 }
+    );
   }
 }

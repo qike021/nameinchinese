@@ -2,13 +2,10 @@
  * GET /api/report/[id]
  *
  * Downloads a PDF report for a generated_names record.
- * Looks up the record, generates a PDF with @react-pdf/renderer,
- * and returns it as a downloadable file.
+ * Fetches via Supabase REST API, generates PDF with @react-pdf/renderer.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { generatedNames } from "@/db/schema";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generatePDF } from "@/lib/report/pdf-generator";
 import type { GeneratedName } from "@/lib/naming/engine";
 import type { BaziResult } from "@/lib/bazi/client";
@@ -27,14 +24,15 @@ export async function GET(
       );
     }
 
-    // ── Look up the generated_names record ──
-    const [record] = await db
-      .select()
-      .from(generatedNames)
-      .where(eq(generatedNames.id, id))
-      .limit(1);
+    // ── Fetch via Supabase REST ──
+    const adminClient = createAdminClient();
+    const { data: record, error } = await adminClient
+      .from("generated_names")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
 
-    if (!record) {
+    if (error || !record) {
       return NextResponse.json(
         { error: "Report not found" },
         { status: 404 }
@@ -43,10 +41,11 @@ export async function GET(
 
     // ── Generate PDF ──
     const names = (record.names || []) as GeneratedName[];
-    const baziResult = record.baziResult as BaziResult | null;
+    const baziResult = record.bazi_result as BaziResult | null;
+    const englishName = record.english_name || "User";
 
     const pdfBuffer = await generatePDF({
-      englishName: record.englishName,
+      englishName,
       names,
       baziResult,
     });
@@ -56,7 +55,7 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="nameinchinese-report-${record.englishName.replace(/\s+/g, "-").toLowerCase()}.pdf"`,
+        "Content-Disposition": `attachment; filename="nameinchinese-report-${englishName.replace(/[\s<>:"/\\|?*]+/g, "-").toLowerCase()}.pdf"`,
         "Content-Length": String(pdfBuffer.length),
       },
     });
