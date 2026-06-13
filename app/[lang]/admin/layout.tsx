@@ -8,6 +8,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { LogoutButton } from "./logout-button";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -77,12 +78,13 @@ export default async function AdminLayout({
         </nav>
 
         {/* User info */}
-        <div className="px-3 py-4 border-t border-border-light">
+        <div className="px-3 py-4 border-t border-border-light space-y-2">
           <div className="px-3 py-2">
             <p className="font-body text-xs text-text-muted truncate">
               {user.email ?? "Admin User"}
             </p>
           </div>
+          <LogoutButton lang={lang} />
         </div>
       </aside>
 
