@@ -1,20 +1,16 @@
 /**
  * GET /api/admin/stats
  *
- * Returns admin dashboard statistics:
- * - Total orders count
- * - Recent 10 orders
- * - Total tattoo reviews count
+ * Returns admin dashboard statistics via Supabase REST API (works even
+ * when direct PG connection is unavailable — e.g. IPv6-only hosts).
  *
  * Protected — requires valid session cookie from Supabase auth.
  */
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { orders, tattooReviews } from "@/db/schema";
-import { count, desc } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     // ── Auth check ──
     const supabase = await createServerSupabase();
@@ -27,36 +23,47 @@ export async function GET(_request: NextRequest) {
       );
     }
 
-    // ── Total orders count ──
-    const [ordersCountResult] = await db
-      .select({ count: count() })
-      .from(orders);
+    // ── Query via Supabase Admin client (REST API, not direct PG) ──
+    const adminClient = createAdminClient();
 
-    // ── Recent 10 orders ──
-    const recentOrders = await db
-      .select({
-        id: orders.id,
-        tier: orders.tier,
-        amount: orders.amount,
-        currency: orders.currency,
-        status: orders.status,
-        paymentMethod: orders.paymentMethod,
-        createdAt: orders.createdAt,
-      })
-      .from(orders)
-      .orderBy(desc(orders.createdAt))
+    // Total orders
+    const { count: totalOrders, error: ordersError } = await adminClient
+      .from("orders")
+      .select("*", { count: "exact", head: true });
+
+    if (ordersError) throw ordersError;
+
+    // Recent 10 orders
+    const { data: recentOrders, error: recentError } = await adminClient
+      .from("orders")
+      .select("id,tier,amount,currency,status,payment_method,created_at")
+      .order("created_at", { ascending: false })
       .limit(10);
 
-    // ── Total tattoo reviews count ──
-    const [reviewsCountResult] = await db
-      .select({ count: count() })
-      .from(tattooReviews);
+    if (recentError) throw recentError;
 
-    // ── Build response ──
+    // Total tattoo reviews
+    const { count: totalReviews, error: reviewsError } = await adminClient
+      .from("tattoo_reviews")
+      .select("*", { count: "exact", head: true });
+
+    if (reviewsError) throw reviewsError;
+
+    // ── Map snake_case DB columns → camelCase for frontend ──
+    const mapped = (recentOrders || []).map((order: Record<string, unknown>) => ({
+      id: order.id,
+      tier: order.tier,
+      amount: order.amount,
+      currency: order.currency,
+      status: order.status,
+      paymentMethod: order.payment_method,
+      createdAt: order.created_at,
+    }));
+
     return NextResponse.json({
-      totalOrders: Number(ordersCountResult?.count ?? 0),
-      recentOrders,
-      totalTattooReviews: Number(reviewsCountResult?.count ?? 0),
+      totalOrders: totalOrders ?? 0,
+      recentOrders: mapped,
+      totalTattooReviews: totalReviews ?? 0,
     });
   } catch (error) {
     console.error("[API] Admin stats failed:", error);
