@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { locales, localeNames } from "@/lib/i18n/config";
@@ -7,14 +8,13 @@ import { locales, localeNames } from "@/lib/i18n/config";
 /**
  * Header — sticky 72px top bar with logo, nav links, language switcher, and CTA.
  *
- * Design spec:
- * - Height: 72px, sticky top, bg #FFFBF5 (bg-bg), border-bottom #E7E5E4 (border-border-light)
- * - Left: Logo "☯ NameInChinese" in font-cjk, 18px, weight 700, color #991B1B (text-primary)
- * - Right: Nav links (Pricing, Tattoo Review) + Language Switcher + CTA button
+ * Desktop: full nav + language pills + CTA
+ * Mobile: compact language select + CTA, nav hidden
  */
 export function Header() {
   const params = useParams<{ lang: string }>();
   const lang = params?.lang ?? "en";
+  const [langOpen, setLangOpen] = useState(false);
 
   return (
     <header className="h-[72px] flex items-center justify-between px-4 md:px-10 bg-bg sticky top-0 z-50 border-b border-border-light">
@@ -50,23 +50,54 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* ── Language Switcher (hidden on small mobile) ── */}
-        <div className="hidden sm:flex items-center gap-1" role="navigation" aria-label="Language switcher">
+        {/* ── Language Switcher ── */}
+        {/* Desktop: full pill row */}
+        <div className="hidden md:flex items-center gap-1">
           {locales.map((locale) => (
             <Link
               key={locale}
               href={`/${locale}`}
-              className={`text-[10px] md:text-xs font-medium px-1 py-0.5 rounded transition-colors ${
+              className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors ${
                 locale === lang
                   ? "bg-primary-light text-primary"
                   : "text-text-muted hover:text-primary"
               }`}
-              aria-current={locale === lang ? "true" : undefined}
-              title={localeNames[locale]}
             >
               {locale.toUpperCase()}
             </Link>
           ))}
+        </div>
+
+        {/* Mobile: compact language select */}
+        <div className="relative md:hidden">
+          <button
+            type="button"
+            onClick={() => setLangOpen(!langOpen)}
+            className="flex items-center gap-0.5 text-xs font-semibold text-text-secondary px-2 py-1 rounded border border-border hover:border-primary transition-colors"
+          >
+            {lang.toUpperCase()}
+            <svg className={`w-3 h-3 transition-transform ${langOpen ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+          {langOpen && (
+            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg py-1 z-50 min-w-[60px]">
+              {locales.map((locale) => (
+                <Link
+                  key={locale}
+                  href={`/${locale}`}
+                  onClick={() => setLangOpen(false)}
+                  className={`block px-3 py-1.5 text-xs font-medium transition-colors ${
+                    locale === lang
+                      ? "bg-primary-light text-primary"
+                      : "text-text-secondary hover:bg-surface-alt"
+                  }`}
+                >
+                  {localeNames[locale]}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── CTA Button ── */}
