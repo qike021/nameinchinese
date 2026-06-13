@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||
       "unknown";
-    const { allowed, remaining, resetIn } = checkRateLimit(`bazi:${ip}`);
+    const { allowed, remaining, resetIn } = await checkRateLimit(`bazi:${ip}`);
 
     if (!allowed) {
       return NextResponse.json(

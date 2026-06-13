@@ -1,4 +1,5 @@
 import { chatCompletion } from "./deepseek";
+import { circuitAllowed, circuitSuccess, circuitFailure } from "@/lib/security/circuit-breaker";
 
 /**
  * DeepSeek 官方 API 模型标识。
@@ -43,6 +44,11 @@ export async function routeAIRequest(
   messages: { role: "system" | "user" | "assistant"; content: string }[],
   options?: RouterOptions
 ): Promise<RouterResult> {
+  // ── Circuit breaker check ──
+  if (!circuitAllowed("deepseek")) {
+    throw new Error("AI service temporarily unavailable — circuit breaker is open. Please try again in 30 seconds.");
+  }
+
   const maxRetries = options?.retries ?? 1;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -55,8 +61,10 @@ export async function routeAIRequest(
         maxTokens: options?.maxTokens,
       });
 
+      circuitSuccess("deepseek");
       return { result, model, attempt };
     } catch (error) {
+      circuitFailure("deepseek");
       console.warn(
         `[AI Router] 模型 ${model} 第 ${attempt + 1}/${maxRetries + 1} 次尝试失败:`,
         error instanceof Error ? error.message : error

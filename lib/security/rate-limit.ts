@@ -1,9 +1,11 @@
 /**
- * Simple in-memory rate limiter.
+ * In-memory rate limiter with async interface.
  *
  * Uses globalThis for Vercel serverless compatibility (shared across
- * warm invocations, reset on cold start). Not suitable for multi-region
- * production, but sufficient for MVP scale.
+ * warm invocations within a single instance).
+ *
+ * For production at scale, replace with Upstash Redis or similar
+ * distributed counter to coordinate across multiple instances.
  */
 
 interface RateLimitEntry {
@@ -11,8 +13,14 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
-const WINDOW_MS = 60_000; // 1 minute
-const MAX_REQUESTS = 10; // per window per key
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 10;
+
+// Per-endpoint overrides
+const LIMITS: Record<string, number> = {
+  "name-gen": 10,
+  bazi: 3,
+};
 
 const globalForRateLimit = globalThis as unknown as {
   rateLimitStore: Map<string, RateLimitEntry> | undefined;
@@ -25,16 +33,17 @@ function getStore(): Map<string, RateLimitEntry> {
   return globalForRateLimit.rateLimitStore;
 }
 
-/** Returns true if the request is allowed, false if rate-limited */
-export function checkRateLimit(key: string): {
+export async function checkRateLimit(key: string): Promise<{
   allowed: boolean;
   remaining: number;
   resetIn: number;
-} {
+}> {
   const store = getStore();
   const now = Date.now();
+  const [prefix] = key.split(":");
+  const max = LIMITS[prefix] ?? MAX_REQUESTS;
 
-  // Clean up expired entries periodically
+  // Lazy cleanup (~10% of requests)
   if (Math.random() < 0.1) {
     for (const [k, entry] of store) {
       if (now > entry.resetAt) store.delete(k);
@@ -45,10 +54,10 @@ export function checkRateLimit(key: string): {
 
   if (!entry || now > entry.resetAt) {
     store.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return { allowed: true, remaining: MAX_REQUESTS - 1, resetIn: WINDOW_MS };
+    return { allowed: true, remaining: max - 1, resetIn: Math.ceil(WINDOW_MS / 1000) };
   }
 
-  if (entry.count >= MAX_REQUESTS) {
+  if (entry.count >= max) {
     return {
       allowed: false,
       remaining: 0,
@@ -59,7 +68,7 @@ export function checkRateLimit(key: string): {
   entry.count++;
   return {
     allowed: true,
-    remaining: MAX_REQUESTS - entry.count,
+    remaining: max - entry.count,
     resetIn: Math.ceil((entry.resetAt - now) / 1000),
   };
 }

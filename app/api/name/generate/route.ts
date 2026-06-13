@@ -9,6 +9,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateNames } from "@/lib/naming/engine";
 import { checkRateLimit } from "@/lib/security/rate-limit";
+import { createAdminClient } from "@/lib/supabase/admin";
+import crypto from "crypto";
+
+/** Simple hash for caching — same input → same hash → cached result */
+function inputHash(obj: Record<string, unknown>): string {
+  return crypto.createHash("sha256").update(JSON.stringify(obj)).digest("hex").slice(0, 16);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,18 +24,12 @@ export async function POST(request: NextRequest) {
       request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||
       "unknown";
-    const { allowed, remaining, resetIn } = checkRateLimit(`name-gen:${ip}`);
+    const { allowed, remaining, resetIn } = await checkRateLimit(`name-gen:${ip}`);
 
     if (!allowed) {
       return NextResponse.json(
-        {
-          error: `Too many requests. Please wait ${resetIn} seconds before trying again.`,
-          retry_after: resetIn,
-        },
-        {
-          status: 429,
-          headers: { "Retry-After": String(resetIn) },
-        }
+        { error: `Too many requests. Please wait ${resetIn} seconds.`, retry_after: resetIn },
+        { status: 429, headers: { "Retry-After": String(resetIn) } }
       );
     }
 
@@ -47,6 +48,37 @@ export async function POST(request: NextRequest) {
         { error: "gender must be 'male' or 'female'" },
         { status: 400 }
       );
+    }
+
+    // ── Cache check: same input → reuse result (1 hour TTL) ──
+    const hash = inputHash(body);
+    const adminClient = createAdminClient();
+    const { data: cached } = await adminClient
+      .from("generated_names")
+      .select("names,bazi_result,created_at")
+      .eq("input_hash", hash)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+    if (cached && cached.created_at) {
+      const age = Date.now() - new Date(cached.created_at).getTime();
+      if (age < CACHE_TTL_MS) {
+        const freeNames = (Array.isArray(cached.names) ? cached.names.slice(0, 2) : []).map(
+          (name: Record<string, unknown>, index: number) => ({ ...name, is_locked: index > 0 })
+        );
+        const baziResult = cached.bazi_result;
+        return NextResponse.json({
+          names: freeNames,
+          bazi_summary: baziResult
+            ? { missing_elements: (baziResult as Record<string, unknown>).missing_elements, hint: "Cached result" }
+            : null,
+          total_names: Array.isArray(cached.names) ? (cached.names as unknown[]).length : 5,
+          locked_count: Math.max(0, (Array.isArray(cached.names) ? (cached.names as unknown[]).length : 2) - 1),
+          cached: true,
+        });
+      }
     }
 
     // ── Generate names ──
