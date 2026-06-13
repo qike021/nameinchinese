@@ -80,11 +80,10 @@ export default function ResultsPage() {
     }
   }, [lang, router]);
 
-  /** Placeholder handler for unlocking — will integrate with payment in a future step */
+  /** Navigate to pricing page for payment (preserves sessionStorage data) */
   const handleUnlock = useCallback(() => {
-    // TODO: Integrate with payment flow
-    // router.push(`/${lang}/pricing`);
-  }, []);
+    router.push(`/${lang}/pricing`);
+  }, [lang, router]);
 
   // ── Loading state ──
   if (isLoading) {

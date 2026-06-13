@@ -50,6 +50,10 @@ export async function createPayPalOrder(tier: string) {
           description: price.name,
         },
       ],
+      application_context: {
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/en/payment/success`,
+        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/en/pricing`,
+      },
     }),
   });
 

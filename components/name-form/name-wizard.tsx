@@ -93,6 +93,8 @@ export function NameWizard() {
 
         const result = await response.json();
 
+        // Store form data for payment flow (needed after PayPal redirect)
+        sessionStorage.setItem("nameFormData", JSON.stringify(data));
         // Store results in sessionStorage for the results page
         sessionStorage.setItem("nameResults", JSON.stringify(result));
 
