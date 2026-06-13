@@ -28,18 +28,52 @@ const notoSerifSC = Noto_Serif_SC({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://nameinchinese.vercel.app"
+  ),
   title: {
-    default: "华名堂 NameInChinese — Your Chinese Name Awaits",
-    template: "%s | 华名堂 NameInChinese",
+    default: "NameInChinese — Your Chinese Name, Culturally Rooted",
+    template: "%s | NameInChinese",
   },
   description:
-    "Get a Chinese name that tells your story, not just translates sounds. Rooted in 3,000 years of poetry and philosophy.",
+    "Get a Chinese name backed by classical poetry, Five Elements analysis, and 3,000 years of cultural tradition. AI-powered, scholar-reviewed. Free preview, from $6.99.",
   keywords: [
     "chinese name generator",
     "get a chinese name",
     "chinese name meaning",
     "chinese name for tattoo",
+    "bazi name",
+    "five elements name",
+    "chinese name feng shui",
+    "chinese cultural name",
   ],
+  openGraph: {
+    title: "NameInChinese — Your Chinese Name, Culturally Rooted",
+    description:
+      "Get a Chinese name backed by classical poetry, Five Elements analysis, and 3,000 years of cultural tradition.",
+    url: "/",
+    siteName: "NameInChinese",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "NameInChinese — Cultural Naming",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NameInChinese — Your Chinese Name, Culturally Rooted",
+    description:
+      "Get a Chinese name backed by classical poetry, Five Elements analysis, and 3,000 years of cultural tradition.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function LocaleLayout({
