@@ -37,10 +37,16 @@ export function Header() {
             Pricing
           </Link>
           <Link
-            href={`/${lang}/tattoo-review`}
+            href={`/${lang}/tattoo`}
             className="font-body text-sm font-medium text-text-secondary hover:text-primary transition-colors"
           >
             Tattoo Review
+          </Link>
+          <Link
+            href={`/${lang}/about`}
+            className="font-body text-sm font-medium text-text-secondary hover:text-primary transition-colors"
+          >
+            About
           </Link>
         </nav>
 
