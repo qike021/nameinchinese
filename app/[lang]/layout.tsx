@@ -76,6 +76,11 @@ export const metadata: Metadata = {
   },
 };
 
+/** Pre-render all locale variants at build time for instant page loads */
+export function generateStaticParams() {
+  return locales.map((locale) => ({ lang: locale }));
+}
+
 export default async function LocaleLayout({
   children,
   params,

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateNames } from "@/lib/naming/engine";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { redisGet, redisSet } from "@/lib/redis/client";
 import crypto from "crypto";
 
 /** Simple hash for caching — same input → same hash → cached result */
@@ -50,8 +51,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Cache check: same input → reuse result (1 hour TTL) ──
+    // ── Cache check: Redis → Supabase → AI generation ──
     const hash = inputHash(body);
+
+    // Level 1: Redis (fastest, shared across instances)
+    const redisCached = await redisGet<Record<string, unknown>>(`name:${hash}`);
+    if (redisCached) {
+      const freeNames = (Array.isArray(redisCached.names) ? (redisCached.names as unknown[]).slice(0, 2) : []).map(
+        (name, index: number) => ({ ...(name as object), is_locked: index > 0 })
+      );
+      return NextResponse.json({
+        names: freeNames,
+        bazi_summary: redisCached.bazi_summary ?? null,
+        total_names: Array.isArray(redisCached.names) ? (redisCached.names as unknown[]).length : 5,
+        locked_count: Math.max(0, (Array.isArray(redisCached.names) ? (redisCached.names as unknown[]).length : 2) - 1),
+        cached: true,
+      });
+    }
+
+    // Level 2: Supabase
     const adminClient = createAdminClient();
     const { data: cached } = await adminClient
       .from("generated_names")
@@ -94,6 +112,15 @@ export async function POST(request: NextRequest) {
       preferredStyle: body.preferred_style || "balanced",
       purpose: body.purpose || "study",
     });
+
+    // ── Cache the result in Redis (1 hour TTL) ──
+    const cachePayload = {
+      names: names.slice(0, 2).map((name, index) => ({ ...name, is_locked: index > 0 })),
+      bazi_summary: baziResult
+        ? { missing_elements: baziResult.missing_elements, hint: "Cached result" }
+        : null,
+    };
+    redisSet(`name:${hash}`, cachePayload, 3600).catch(() => {});
 
     // ── Free tier: 2 names, only #1 fully visible ──
     const freeNames = names.slice(0, 2).map((name, index) => ({
