@@ -12,12 +12,14 @@ import {
   LayoutDashboard,
   ShoppingCart,
   MessageSquare,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { label: "Reviews", href: "/admin/reviews", icon: MessageSquare },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ] as const;
 
 export default async function AdminLayout({

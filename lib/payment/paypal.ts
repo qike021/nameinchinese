@@ -4,23 +4,12 @@
  * Handles order creation and capture for NameInChinese.
  * Uses PayPal's v2/checkout/orders API.
  *
- * Environment variables required:
- * - NEXT_PUBLIC_PAYPAL_CLIENT_ID — PayPal app client ID (public)
- * - PAYPAL_SECRET — PayPal app secret (server-only)
- *
- * Switch between sandbox and production:
- * - Sandbox: https://api-m.sandbox.paypal.com
- * - Production: https://api-m.paypal.com
+ * API credentials (Client ID + Secret) are read from the database
+ * platform_settings table, with .env.local as fallback.
+ * Configure them in: Admin → Settings → API Configuration.
  */
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
-const PAYPAL_SECRET = process.env.PAYPAL_SECRET!;
-
-// Use sandbox for development, production for live
-const PAYPAL_API =
-  process.env.NODE_ENV === "production"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
+import { getSetting } from "@/lib/config/settings";
 
 /** Pricing tiers with USD amounts */
 const TIER_PRICES: Record<string, { amount: number; name: string }> = {
@@ -42,8 +31,9 @@ export async function createPayPalOrder(tier: string) {
   }
 
   const accessToken = await getAccessToken();
+  const paypalApi = getPayPalApiUrl();
 
-  const res = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
+  const res = await fetch(`${paypalApi}/v2/checkout/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -76,9 +66,10 @@ export async function createPayPalOrder(tier: string) {
  */
 export async function capturePayPalOrder(orderId: string) {
   const accessToken = await getAccessToken();
+  const paypalApi = getPayPalApiUrl();
 
   const res = await fetch(
-    `${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`,
+    `${paypalApi}/v2/checkout/orders/${orderId}/capture`,
     {
       method: "POST",
       headers: {
@@ -95,13 +86,32 @@ export async function capturePayPalOrder(orderId: string) {
   return res.json();
 }
 
-/** Get OAuth2 access token from PayPal */
-async function getAccessToken(): Promise<string> {
-  const auth = Buffer.from(
-    `${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`
-  ).toString("base64");
+/** Use sandbox for development, production for live */
+function getPayPalApiUrl(): string {
+  return process.env.NODE_ENV === "production"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+}
 
-  const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+/** Get OAuth2 access token from PayPal (no caching — each call is stateless) */
+async function getAccessToken(): Promise<string> {
+  // 从数据库读取 PayPal 凭证，env 兜底
+  const clientId =
+    (await getSetting("paypal_client_id")) ||
+    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const secret =
+    (await getSetting("paypal_secret")) || process.env.PAYPAL_SECRET;
+
+  if (!clientId || !secret) {
+    throw new Error(
+      "PayPal credentials not configured. Go to Admin → Settings → API Configuration to set PayPal Client ID and Secret, or set them in .env.local."
+    );
+  }
+
+  const paypalApi = getPayPalApiUrl();
+  const auth = Buffer.from(`${clientId}:${secret}`).toString("base64");
+
+  const res = await fetch(`${paypalApi}/v1/oauth2/token`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,

@@ -2,9 +2,13 @@
  * TypeScript client for the cnlunar Bazi microservice.
  *
  * The Python service is deployed separately (Railway/Fly.io free tier).
- * This client handles serialization, error handling, and type safety
- * for the cross-service HTTP call.
+ * Service URL is read from database platform_settings table,
+ * with CNLUNAR_SERVICE_URL env var as fallback.
+ *
+ * Configure in: Admin → Settings → API Configuration.
  */
+
+import { getSetting } from "@/lib/config/settings";
 
 /** Input parameters for Bazi calculation */
 export interface BaziRequest {
@@ -26,9 +30,16 @@ export interface BaziResult {
   missing_elements: string[];
 }
 
-/** Base URL of the cnlunar microservice */
-const CNLUNAR_URL =
-  process.env.CNLUNAR_SERVICE_URL || "http://localhost:8000";
+/** 获取 cnlunar 微服务 URL（DB 优先，env 兜底，最终默认 localhost） */
+async function getCnlunarUrl(): Promise<string> {
+  const fromDb = await getSetting("cnlunar_service_url");
+  if (fromDb) return fromDb;
+
+  const fromEnv = process.env.CNLUNAR_SERVICE_URL;
+  if (fromEnv) return fromEnv;
+
+  return "http://localhost:8000";
+}
 
 /**
  * Calculate a full Bazi chart for the given birth information.
@@ -38,7 +49,9 @@ const CNLUNAR_URL =
  * @throws Error if the microservice is unavailable or returns an error
  */
 export async function calculateBazi(data: BaziRequest): Promise<BaziResult> {
-  const res = await fetch(`${CNLUNAR_URL}/calculate`, {
+  const cnlunarUrl = await getCnlunarUrl();
+
+  const res = await fetch(`${cnlunarUrl}/calculate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -63,7 +76,9 @@ export async function calculateBazi(data: BaziRequest): Promise<BaziResult> {
  */
 export async function baziHealthCheck(): Promise<boolean> {
   try {
-    const res = await fetch(`${CNLUNAR_URL}/health`, {
+    const cnlunarUrl = await getCnlunarUrl();
+
+    const res = await fetch(`${cnlunarUrl}/health`, {
       signal: AbortSignal.timeout(3000),
     });
     const body = await res.json();

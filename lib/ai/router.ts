@@ -1,38 +1,43 @@
-import { chatCompletion } from "./openrouter";
+import { chatCompletion } from "./deepseek";
 
 /**
- * Model identifiers on OpenRouter.
- * V4 Flash: primary — best Chinese culture quality, lowest cost
- * V3: fallback — different deployment, rarely down simultaneously
+ * DeepSeek 官方 API 模型标识。
+ *
+ * 主力: deepseek-chat（当前指向 DeepSeek 最新 chat 模型，支持 V4 Flash 级别能力）
+ * 降级: deepseek-chat 在不同部署节点重试（同一模型ID，不同物理节点，极少同时挂）
+ *
+ * 注意: DeepSeek 官方 API 的模型 ID 可能随版本更新调整。
+ * 请以 https://platform.deepseek.com/api-docs 实际可用的模型列表为准。
  */
-const PRIMARY_MODEL = "deepseek/deepseek-chat-v4-flash";
-const FALLBACK_MODEL = "deepseek/deepseek-chat-v3";
+const PRIMARY_MODEL = "deepseek-chat";
+const FALLBACK_MODEL = "deepseek-chat"; // 同一模型，不同重试 = 不同物理节点
 
 interface RouterOptions {
   temperature?: number;
   maxTokens?: number;
-  /** Max retry attempts with fallback model. Default: 1 (primary only) */
+  /** Maximum retry attempts. Default: 1 (primary attempt + 1 retry) */
   retries?: number;
 }
 
 interface RouterResult {
   /** The parsed response from the AI */
   result: Awaited<ReturnType<typeof chatCompletion>>;
-  /** Which model actually served the request */
+  /** Which model identifier was used */
   model: string;
-  /** Which attempt number succeeded (0 = first try with primary) */
+  /** Which attempt number succeeded (0 = first try) */
   attempt: number;
 }
 
 /**
- * Routes an AI request through primary → fallback models.
- * If the primary model fails (rate limit, server error, timeout),
- * automatically retries with the fallback model.
+ * 发送 AI 请求，失败自动重试。
  *
- * @param messages - The chat messages to send
- * @param options - Router configuration
- * @returns The AI response with metadata about which model served it
- * @throws If all models (primary + fallback) fail
+ * DeepSeek 官方 API 的降级策略: 同一模型 ID 在不同请求间会被
+ * 负载均衡到不同物理节点，因此重试本身就是有效的降级手段。
+ *
+ * @param messages  - 对话消息数组
+ * @param options   - 路由配置
+ * @returns AI 响应结果 + 元数据（用了哪个模型、第几次成功）
+ * @throws 所有重试都失败时抛出
  */
 export async function routeAIRequest(
   messages: { role: "system" | "user" | "assistant"; content: string }[],
@@ -52,44 +57,47 @@ export async function routeAIRequest(
 
       return { result, model, attempt };
     } catch (error) {
-      // Log and try fallback
       console.warn(
-        `[AI Router] Model ${model} failed (attempt ${attempt}/${maxRetries}):`,
+        `[AI Router] 模型 ${model} 第 ${attempt + 1}/${maxRetries + 1} 次尝试失败:`,
         error instanceof Error ? error.message : error
       );
 
       if (attempt === maxRetries) {
         throw new Error(
-          `All AI models failed after ${maxRetries + 1} attempts. Last error: ${error instanceof Error ? error.message : "Unknown error"}`
+          `所有 AI 请求均失败（共 ${maxRetries + 1} 次尝试）。最后错误: ${error instanceof Error ? error.message : "未知错误"}`
         );
       }
 
-      // Brief delay before fallback to avoid rate-limit cascades
+      // 短暂等待后重试，避免触发频率限制
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
-  // TypeScript requires this, but it should be unreachable
-  throw new Error("Unreachable: AI router exhausted all models");
+  // TypeScript 要求此行，实际不会到达
+  throw new Error("AI 路由异常: 已耗尽所有重试次数");
 }
 
 /**
- * Extracts a JSON object or array from an AI response string.
- * Handles markdown code blocks and plain JSON.
+ * 从 AI 响应文本中提取 JSON 对象或数组。
+ *
+ * 处理三种情况:
+ * 1. Markdown 代码块包裹的 JSON (```json ... ```)
+ * 2. 文本中嵌入的 JSON 对象/数组
+ * 3. 整个响应就是纯 JSON
  */
 export function extractJson<T = unknown>(content: string): T {
-  // Try to extract from markdown code block first
+  // 优先尝试提取 markdown 代码块中的 JSON
   const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
     return JSON.parse(codeBlockMatch[1].trim()) as T;
   }
 
-  // Try to find JSON object/array directly
+  // 其次查找文本中的 JSON 对象或数组
   const jsonMatch = content.match(/(\{[\s\S]*\})|(\[[\s\S]*\])/);
   if (jsonMatch) {
     return JSON.parse(jsonMatch[0]) as T;
   }
 
-  // Fallback: try parsing the whole content
+  // 兜底: 尝试解析整个内容
   return JSON.parse(content) as T;
 }

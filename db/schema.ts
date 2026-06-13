@@ -63,6 +63,14 @@ export const generatedNames = pgTable("generated_names", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+/** Platform settings — dynamic configuration editable from admin dashboard */
+export const platformSettings = pgTable("platform_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 /** Tattoo safety review records */
 export const tattooReviews = pgTable("tattoo_reviews", {
   id: uuid("id").defaultRandom().primaryKey(),
