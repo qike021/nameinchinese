@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { locales, localeNames } from "@/lib/i18n/config";
+import { useParams, usePathname } from "next/navigation";
+import { locales, localeNames, defaultLocale } from "@/lib/i18n/config";
 
 /**
  * Header — sticky 72px top bar with logo, nav links, language switcher, and CTA.
@@ -13,8 +13,18 @@ import { locales, localeNames } from "@/lib/i18n/config";
  */
 export function Header() {
   const params = useParams<{ lang: string }>();
+  const pathname = usePathname();
   const lang = params?.lang ?? "en";
   const [langOpen, setLangOpen] = useState(false);
+
+  /** Replace the locale segment in the current pathname */
+  function switchLocaleHref(targetLocale: string): string {
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length > 0 && (locales as readonly string[]).includes(segments[0])) {
+      segments[0] = targetLocale;
+    }
+    return "/" + segments.join("/");
+  }
 
   return (
     <header className="h-[72px] flex items-center justify-between px-4 md:px-10 bg-bg sticky top-0 z-50 border-b border-border-light">
@@ -56,7 +66,7 @@ export function Header() {
           {locales.map((locale) => (
             <Link
               key={locale}
-              href={`/${locale}`}
+              href={switchLocaleHref(locale)}
               className={`text-xs font-medium px-1.5 py-0.5 rounded transition-colors ${
                 locale === lang
                   ? "bg-primary-light text-primary"
@@ -81,11 +91,11 @@ export function Header() {
             </svg>
           </button>
           {langOpen && (
-            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg py-1 z-50 min-w-[60px]">
+            <div className="absolute top-full right-0 mt-1 bg-surface border border-border rounded-lg shadow-lg py-1 z-50 min-w-[80px]">
               {locales.map((locale) => (
                 <Link
                   key={locale}
-                  href={`/${locale}`}
+                  href={switchLocaleHref(locale)}
                   onClick={() => setLangOpen(false)}
                   className={`block px-3 py-1.5 text-xs font-medium transition-colors ${
                     locale === lang
