@@ -28,8 +28,8 @@ interface BaziRecord {
 }
 
 interface ReportClientProps {
-  names: NameRecord[];
-  baziResult: BaziRecord | null;
+  names: Record<string, unknown>[];
+  baziResult: Record<string, unknown> | null;
   reportId: string;
 }
 
@@ -60,21 +60,24 @@ export function ReportClient({ names, baziResult, reportId }: ReportClientProps)
       {/* ── Name Details ── */}
       {names.length > 0 && (
         <div className="space-y-6 md:space-y-8">
-          {names.map((name, index) => (
-            <NameDetail
-              key={index}
-              chineseName={name.chinese_name}
-              pinyin={name.pinyin}
-              characters={name.characters}
-              fullMeaning={name.fullMeaning}
-              culturalStory={name.culturalStory}
-              pronunciationTip={name.pronunciationTip}
-              bestFor={name.bestFor}
-              isBestMatch={index === 0}
-              bestMatchLabel="Best Match"
-              index={index}
-            />
-          ))}
+          {names.map((name, index) => {
+            const n = name as Record<string, unknown>;
+            return (
+              <NameDetail
+                key={index}
+                chineseName={String(n.chinese_name ?? "")}
+                pinyin={String(n.pinyin ?? "")}
+                characters={(Array.isArray(n.characters) ? n.characters : []) as ReportCharacter[]}
+                fullMeaning={String(n.fullMeaning ?? "")}
+                culturalStory={String(n.culturalStory ?? "")}
+                pronunciationTip={String(n.pronunciationTip ?? "")}
+                bestFor={String(n.bestFor ?? "")}
+                isBestMatch={index === 0}
+                bestMatchLabel="Best Match"
+                index={index}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -82,17 +85,17 @@ export function ReportClient({ names, baziResult, reportId }: ReportClientProps)
       {baziResult && (
         <div className="mt-8 md:mt-10">
           <BaziAnalysis
-            yearPillar={baziResult.year_pillar}
-            monthPillar={baziResult.month_pillar}
-            dayPillar={baziResult.day_pillar}
-            hourPillar={baziResult.hour_pillar}
-            dayMaster={baziResult.day_master}
-            dayMasterElement={baziResult.day_master_element}
-            fiveElements={baziResult.five_elements}
-            missingElements={baziResult.missing_elements}
+            yearPillar={String(baziResult.year_pillar ?? "")}
+            monthPillar={String(baziResult.month_pillar ?? "")}
+            dayPillar={String(baziResult.day_pillar ?? "")}
+            hourPillar={String(baziResult.hour_pillar ?? "")}
+            dayMaster={String(baziResult.day_master ?? "")}
+            dayMasterElement={String(baziResult.day_master_element ?? "")}
+            fiveElements={(typeof baziResult.five_elements === "object" && baziResult.five_elements) ? baziResult.five_elements as Record<string, number> : {}}
+            missingElements={Array.isArray(baziResult.missing_elements) ? baziResult.missing_elements as string[] : []}
             dayMasterExplanation={
               baziResult.day_master
-                ? DAY_MASTER_EXPLANATIONS[baziResult.day_master] ||
+                ? DAY_MASTER_EXPLANATIONS[String(baziResult.day_master)] ||
                   `Your Day Master is ${baziResult.day_master} (${baziResult.day_master_element}). This represents your core personality in Chinese metaphysics.`
                 : undefined
             }

@@ -1,13 +1,11 @@
 /**
  * Report Page — full Chinese name report for paid users.
  *
- * Shows all 8 generated names in vertical detail, Bazi analysis
- * (if available), and a "Download PDF" button.
+ * Shows all names in vertical detail, Bazi analysis (if available),
+ * and a "Download PDF" button. Fetches via Supabase REST API.
  */
-import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
-import { generatedNames } from "@/db/schema";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ReportClient } from "./report-client";
@@ -19,19 +17,25 @@ interface ReportPageProps {
 export default async function ReportPage({ params }: ReportPageProps) {
   const { lang, id } = await params;
 
-  // ── Fetch the generated_names record ──
-  const [record] = await db
-    .select()
-    .from(generatedNames)
-    .where(eq(generatedNames.id, id))
-    .limit(1);
+  // ── Fetch via Supabase REST API ──
+  const adminClient = createAdminClient();
+  const { data: record, error } = await adminClient
+    .from("generated_names")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
-  if (!record) {
+  if (error || !record) {
     notFound();
   }
 
-  const names = (record.names as any[]) || [];
-  const baziResult = record.baziResult as any;
+  // Safe extraction with type guards
+  const names = Array.isArray(record.names) ? record.names : [];
+  const baziResult = record.bazi_result &&
+    typeof record.bazi_result === "object" &&
+    "day_master" in record.bazi_result
+    ? record.bazi_result
+    : null;
 
   return (
     <>
@@ -40,7 +44,6 @@ export default async function ReportPage({ params }: ReportPageProps) {
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-10 md:py-16">
           {/* ── Page Header ── */}
           <div className="text-center mb-10 md:mb-12">
-            {/* Professional Badge */}
             <div className="inline-flex items-center gap-1.5 bg-primary-light text-primary text-xs font-semibold px-3 py-1 rounded-full mb-4">
               <span>Pro Report</span>
             </div>
